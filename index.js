@@ -25,22 +25,24 @@ async function run() {
         app.get('/products', async (req, res) => {
             const query = {};
             const cursor = products.find(query);
-            let productsArray;
-            let skipProducts = 0;
+            const count = await cursor.count();
 
-            const numberOfPage = req.query.pageNumber;
+            const currentPage = parseInt(req.query.currentPage);
             const size = parseInt(req.query.size);
 
-            if (numberOfPage) {
-                skipProducts = numberOfPage * size;
-                productsArray = await cursor.skip(skipProducts).limit(size).toArray();
+            let productsArray;
+            if (currentPage) {
+                productsArray = await cursor.skip(currentPage * size).limit(size).toArray();
             }
 
             else {
                 productsArray = await cursor.toArray();
-            };
+            }
 
-            res.send(productsArray);
+            res.send({
+                count,
+                productsArray
+            });
         });
 
         // GET SINGLE PRODUCT API
