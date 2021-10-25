@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const ObjectId = require('mongodb').ObjectId;
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -10,7 +11,7 @@ app.use(express.json());
 
 // MongoDB
 const { MongoClient } = require('mongodb');
-const uri = "mongodb+srv://xxxxxxRIFATxxxxxx:xxxxxxRIFATxxxxxx@cluster0.vwkey.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.vwkey.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -24,7 +25,21 @@ async function run() {
         app.get('/products', async (req, res) => {
             const query = {};
             const cursor = products.find(query);
-            const productsArray = await cursor.toArray();
+            let productsArray;
+            let skipProducts = 0;
+
+            const numberOfPage = req.query.pageNumber;
+            const size = parseInt(req.query.size);
+
+            if (numberOfPage) {
+                skipProducts = numberOfPage * size;
+                productsArray = await cursor.skip(skipProducts).limit(size).toArray();
+            }
+
+            else {
+                productsArray = await cursor.toArray();
+            };
+
             res.send(productsArray);
         });
 
