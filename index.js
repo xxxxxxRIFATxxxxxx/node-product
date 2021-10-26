@@ -20,6 +20,7 @@ async function run() {
         await client.connect();
         const database = client.db("productsDB");
         const products = database.collection("products");
+        const cart = database.collection("cart");
 
         // GET ALL PRODUCTS API
         app.get('/products', async (req, res) => {
@@ -83,6 +84,50 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await products.deleteOne(query);
+            res.send(result);
+        });
+
+        // GET ALL CART API
+        app.get('/cart', async (req, res) => {
+            const query = {};
+            const cursor = cart.find(query);
+            const cartArray = await cursor.toArray()
+            res.send(cartArray);
+        });
+
+        // POST CART API
+        app.post('/cart', async (req, res) => {
+            const product = req.body;
+            const result = await cart.insertOne(product);
+            res.send(result);
+        });
+
+        // UPDATE SINGLE CART API
+        app.put('/cart/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const product = req.body;
+            const updateDoc = {
+                $set: {
+                    key: product.key,
+                    category: product.category,
+                    name: product.name,
+                    seller: product.seller,
+                    wholePrice: product.wholePrice,
+                    priceFraction: product.priceFraction,
+                    stock: product.stock,
+                    star: product.star,
+                    starCount: product.starCount,
+                    img: product.img,
+                    url: product.url,
+                    features: product.features,
+                    price: product.price,
+                    shipping: product.shipping,
+                    qty: product.qty
+                },
+            };
+            const result = await cart.updateOne(query, updateDoc);
+            console.log(result)
             res.send(result);
         });
     }
