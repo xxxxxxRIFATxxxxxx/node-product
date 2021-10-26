@@ -107,6 +107,7 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const product = req.body;
+            const options = { upsert: true };
             const updateDoc = {
                 $set: {
                     key: product.key,
@@ -126,8 +127,8 @@ async function run() {
                     qty: product.qty
                 },
             };
-            const result = await cart.updateOne(query, updateDoc);
-            console.log(result)
+            const result = await cart.updateOne(query, updateDoc, options);
+            console.log(result);
             res.send(result);
         });
     }
